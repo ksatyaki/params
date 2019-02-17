@@ -1,10 +1,8 @@
 #pragma once
 
-#include <limits>
 #include <string>
 #include <unordered_map>
 #include <variant>
-#include <vector>
 
 #include <nlohmann/json.hpp>
 
@@ -65,8 +63,6 @@ public:
     if (parent != nullptr)
       parent->subgroups_[name] = this;
   }
-
-  template <class Archive> void serialize(Archive &archive) {}
 
   std::unordered_map<std::string, SerializableProperty> &members() {
     return members_;
