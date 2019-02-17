@@ -1,11 +1,4 @@
-# params
-Simple, header-only library for parameter handling in C++17
-
-This library uses `nlohmann_json` (>= 3.2.0) to serialize parameters as JSON.
-
-### Usage
-```cpp
-#include "params.hpp"
+#include "include/params.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -64,4 +57,3 @@ int main(int argc, char **argv) {
 
   return EXIT_SUCCESS;
 }
-```
