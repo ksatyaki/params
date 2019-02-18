@@ -135,9 +135,9 @@ inline std::enable_if_t<serializable<T>{}> to_json(json &j, const P0<T> &p) {
 inline void to_json(json &j, const Group &g) {
   auto &j_ = j[g.name()];
   for (const auto &subgroup : g.subgroups())
-    to_json(j_[subgroup.first], *subgroup.second);
+    to_json(j_, *subgroup.second);
   for (const auto &member : g.members()) {
-    std::visit([&](const auto *p) { to_json(j_[member.first], *p); },
+    std::visit([&](const auto *p) { to_json(j_, *p); },
                member.second);
   }
 }
