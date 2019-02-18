@@ -30,26 +30,19 @@ int main(int argc, char **argv) {
       using Group::Group;
       Property<std::string> test{"Value", "test", this};
       Property<Group> notSerializable{"unserializable"};
-      Property<ExampleEnum> enumProperty = {E1, "test", this};
+      Property<ExampleEnum> enumProperty = {E1, "enum_property", this};
     } mySettings1{"mySettings1", this};
 
     struct MySettings2 : public Group {
       using Group::Group;
       Property<unsigned int> uint{123u, "uint", this};
       Property<double> pi{M_PI, "pi", this};
-      Property<std::function<void(int)>> function{
-          [](int a) {
-            std::cout << "Calling function with a = " << a << std::endl;
-          },
-          "unserializable_function", this};
     } mySettings2{"mySettings2", this};
   } mainSettings{"mainSettings"};
   std::cout << mainSettings << std::endl;
 
   // retrieve a value from a property within a group
   assert(mainSettings.mySettings1.enumProperty == E1);
-  assert(mainSettings.mySettings1.get<std::string>("test") == "Value");
-  mainSettings.mySettings2.function.value()(42);
 
   // serialize settings to JSON
   nlohmann::json j = mainSettings;
