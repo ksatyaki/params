@@ -47,7 +47,7 @@ using SerializableProperty =
                  P0<float> *, P0<double> *, P0<long> *, P0<unsigned long> *,
                  P0<short> *, P0<unsigned short> *>;
 
-std::ostream &operator<<(std::ostream &stream,
+inline std::ostream &operator<<(std::ostream &stream,
                          const SerializableProperty &pvar) {
   std::visit([&stream](auto &property) { stream << *property; }, pvar);
   return stream;
@@ -125,17 +125,16 @@ protected:
 
 using nlohmann::json;
 template <typename T>
-std::enable_if_t<serializable<T>{}> to_json(json &j, const P0<T> &p) {
+inline std::enable_if_t<serializable<T>{}> to_json(json &j, const P0<T> &p) {
   j[p.name()] = p.value();
 }
 
-void to_json(json &j, const Group &g) {
+inline void to_json(json &j, const Group &g) {
   for (const auto &subgroup : g.subgroups())
     to_json(j[subgroup.first], *subgroup.second);
   for (const auto &member : g.members()) {
-    std::visit([&](const auto *p) {
-      to_json(j[member.first], *p);
-    }, member.second);
+    std::visit([&](const auto *p) { to_json(j[member.first], *p); },
+               member.second);
   }
 }
 
