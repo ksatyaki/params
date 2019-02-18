@@ -48,7 +48,7 @@ using SerializableProperty =
                  P0<short> *, P0<unsigned short> *>;
 
 inline std::ostream &operator<<(std::ostream &stream,
-                         const SerializableProperty &pvar) {
+                                const SerializableProperty &pvar) {
   std::visit([&stream](auto &property) { stream << *property; }, pvar);
   return stream;
 }
@@ -93,6 +93,9 @@ public:
     return std::get<P0<T> *>(members_.at(name))->value();
   }
 
+  const std::string &name() const { return name_; }
+  std::string &name() { return name_; }
+
 private:
   std::string name_;
   std::unordered_map<std::string, Group *> subgroups_;
@@ -130,10 +133,11 @@ inline std::enable_if_t<serializable<T>{}> to_json(json &j, const P0<T> &p) {
 }
 
 inline void to_json(json &j, const Group &g) {
+  auto &j_ = j[g.name()];
   for (const auto &subgroup : g.subgroups())
-    to_json(j[subgroup.first], *subgroup.second);
+    to_json(j_[subgroup.first], *subgroup.second);
   for (const auto &member : g.members()) {
-    std::visit([&](const auto *p) { to_json(j[member.first], *p); },
+    std::visit([&](const auto *p) { to_json(j_[member.first], *p); },
                member.second);
   }
 }
