@@ -69,7 +69,7 @@ public:
       group->members()[name_] = this;
   }
 
-  Property(const T &value, const std::string &name = "", Group *group = nullptr)
+  explicit Property(const T &value, const std::string &name = "", Group *group = nullptr)
       : P0(name), value_(value), group_(group) {
     if (group != nullptr)
       group->members()[name_] = this;
@@ -80,6 +80,11 @@ public:
 
   inline const T &value() const { return value_; }
   inline T &value() { return value_; }
+
+  Property<T> &operator=(const T &v) {
+      value_ = v;
+      return *this;
+  }
 
   friend std::ostream &operator<<(std::ostream &stream, const Property<T> &p) {
     if (p.name_.empty())

@@ -17,7 +17,8 @@ int main(int argc, char **argv) {
 
   // the same works for enums and other primitive types
   enum ExampleEnum { E0, E1, E2 };
-  Property<ExampleEnum> enumTest = E1;
+  Property<ExampleEnum> enumTest;
+  enumTest = E1;
   ExampleEnum realEnum = enumTest;
   std::cout << realEnum << std::endl;
 
@@ -30,7 +31,7 @@ int main(int argc, char **argv) {
       using Group::Group;
       Property<std::string> test{"Value", "test", this};
       Property<Group> notSerializable{"unserializable"};
-      Property<ExampleEnum> enumProperty = {E1, "enum_property", this};
+      Property<ExampleEnum> enumProperty{E1, "enum_property", this};
     } mySettings1{"mySettings1", this};
 
     struct MySettings2 : public Group {
