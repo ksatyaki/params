@@ -11,7 +11,7 @@ class P0 {
 public:
   inline const std::string &name() const { return name_; }
 
-  virtual void serialize(nlohmann::json &) const = 0;
+  virtual void serialize(nlohmann::json &j) const { j[name_] = {}; }
 
   friend std::ostream &operator<<(std::ostream &stream, const P0 &p) {
     return stream << p.name_;
@@ -69,7 +69,8 @@ public:
       group->members()[name_] = this;
   }
 
-  explicit Property(const T &value, const std::string &name = "", Group *group = nullptr)
+  explicit Property(const T &value, const std::string &name = "",
+                    Group *group = nullptr)
       : P0(name), value_(value), group_(group) {
     if (group != nullptr)
       group->members()[name_] = this;
@@ -82,8 +83,8 @@ public:
   inline T &value() { return value_; }
 
   Property<T> &operator=(const T &v) {
-      value_ = v;
-      return *this;
+    value_ = v;
+    return *this;
   }
 
   friend std::ostream &operator<<(std::ostream &stream, const Property<T> &p) {

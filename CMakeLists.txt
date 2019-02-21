@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(params)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 
 # Enable warnings and error on warning
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
