@@ -12,6 +12,7 @@ public:
   inline const std::string &name() const { return name_; }
 
   virtual void serialize(nlohmann::json &j) const { j[name_] = {}; }
+  virtual void serialize(std::ostream &stream) const { stream << name_; }
 
   friend std::ostream &operator<<(std::ostream &stream, const P0 &p) {
     return stream << p.name_;
@@ -45,8 +46,11 @@ public:
 
   friend std::ostream &operator<<(std::ostream &stream, const Group &g) {
     stream << '<' << g.name_ << '>' << std::endl;
-    for (const auto &member : g.members_)
-      stream << '\t' << *member.second << std::endl;
+    for (const auto &member : g.members_) {
+      stream << '\t';
+      member.second->serialize(stream);
+      stream << std::endl;
+    }
     for (const auto &member : g.subgroups_)
       stream << *member.second << std::endl;
     stream << "</" << g.name_ << '>';
@@ -94,6 +98,9 @@ public:
   }
 
   void serialize(nlohmann::json &j) const override { j[name_] = value_; }
+  virtual void serialize(std::ostream &stream) const {
+    stream << name_ << '=' << value_;
+  }
 
 protected:
   T value_{};
