@@ -91,6 +91,10 @@ public:
     return *this;
   }
 
+  bool operator==(const Property<T> &other) {
+      return name_ == other.name_ && value_ == other.value_;
+  }
+
   friend std::ostream &operator<<(std::ostream &stream, const Property<T> &p) {
     if (p.name_.empty())
       return stream << p.value_;
