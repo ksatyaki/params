@@ -91,7 +91,7 @@ public:
     return *this;
   }
 
-  bool operator==(const Property<T> &other) {
+  bool operator==(const Property<T> &other) const {
       return name_ == other.name_ && value_ == other.value_;
   }
 
