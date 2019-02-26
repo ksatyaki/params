@@ -62,7 +62,7 @@ public:
   const std::string &name() const { return name_; }
 
   void load(const nlohmann::json &j) {
-    if (!j.contains(name_))
+    if (j.find(name_) == j.end())
       return;
     const auto subj = j[name_];
     for (const auto &member : members_)
@@ -119,7 +119,7 @@ public:
   }
 
   void load(const nlohmann::json &j) override {
-    if (!j.contains(name_))
+    if (j.find(name_) == j.end())
       return;
     value_ = j[name_];
   }
