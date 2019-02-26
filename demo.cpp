@@ -30,7 +30,6 @@ int main(int argc, char **argv) {
     struct MySettings1 : public Group {
       using Group::Group;
       Property<std::string> test{"Value", "test", this};
-      Property<Group> notSerializable{"unserializable"};
       Property<ExampleEnum> enumProperty{E1, "enum_property", this};
     } mySettings1{"mySettings1", this};
 
@@ -48,6 +47,11 @@ int main(int argc, char **argv) {
   // serialize settings to JSON
   nlohmann::json j = mainSettings;
   std::cout << j.dump() << std::endl;
+
+  mainSettings.mySettings1.test = "This change will be overwritten.";
+
+  mainSettings.load(j);
+  std::cout << mainSettings;
 
   return EXIT_SUCCESS;
 }

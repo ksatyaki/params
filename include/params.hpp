@@ -18,6 +18,8 @@ public:
     return stream << p.name_;
   }
 
+  virtual void load(const nlohmann::json &j) = 0;
+
 protected:
   std::string name_{""};
   P0(const std::string &name) : name_(name) {}
@@ -59,6 +61,16 @@ public:
 
   const std::string &name() const { return name_; }
 
+  void load(const nlohmann::json &j) {
+    if (!j.contains(name_))
+      return;
+    const auto subj = j[name_];
+    for (const auto &member : members_)
+      member.second->load(subj);
+    for (const auto &member : subgroups_)
+      member.second->load(subj);
+  }
+
 private:
   std::string name_;
   std::unordered_map<std::string, Group *> subgroups_;
@@ -92,7 +104,7 @@ public:
   }
 
   bool operator==(const Property<T> &other) const {
-      return name_ == other.name_ && value_ == other.value_;
+    return name_ == other.name_ && value_ == other.value_;
   }
 
   friend std::ostream &operator<<(std::ostream &stream, const Property<T> &p) {
@@ -104,6 +116,12 @@ public:
   void serialize(nlohmann::json &j) const override { j[name_] = value_; }
   virtual void serialize(std::ostream &stream) const {
     stream << name_ << '=' << value_;
+  }
+
+  void load(const nlohmann::json &j) override {
+    if (!j.contains(name_))
+      return;
+    value_ = j[name_];
   }
 
 protected:
