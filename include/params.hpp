@@ -121,13 +121,24 @@ public:
   void load(const nlohmann::json &j) override {
     if (j.find(name_) == j.end())
       return;
-    value_ = j[name_];
+    value_ = j[name_].get<T>();
   }
 
 protected:
   T value_{};
   Group *group_{nullptr};
 };
+
+template <typename U>
+inline std::ostream &operator<<(std::ostream &stream, const std::vector<U> &p) {
+  stream << '[';
+  for (auto i = 0u; i < p.size(); ++i) {
+    stream << p[i];
+    if (i < p.size() - 1)
+      stream << ", ";
+  }
+  return stream << ']';
+}
 
 using nlohmann::json;
 template <typename T> void to_json(json &j, const Property<T> &p) {

@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
       using Group::Group;
       Property<unsigned int> uint{123u, "uint", this};
       Property<double> pi{M_PI, "pi", this};
+      Property<std::vector<double>> numbers{{0, 1, 2, 3}, "numbers", this};
     } mySettings2{"mySettings2", this};
   } mainSettings{"mainSettings"};
   std::cout << mainSettings << std::endl;
