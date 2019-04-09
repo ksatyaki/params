@@ -1,7 +1,7 @@
 # params
 Simple, header-only library for parameter handling in C++11.
 
-This library uses `nlohmann_json` (>= 3.2.0) to serialize parameters as JSON.
+This library uses `nlohmann_json` (3.2.0) to serialize parameters as JSON.
 
 ### Usage
 ```cpp
