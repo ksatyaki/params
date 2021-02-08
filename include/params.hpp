@@ -71,6 +71,11 @@ public:
       member.second->load(subj);
   }
 
+  void add_subgroup(Group *group) {
+    assert(group);
+    subgroups_[group->name_] = group;
+  }
+
 private:
   std::string name_;
   std::unordered_map<std::string, Group *> subgroups_;
