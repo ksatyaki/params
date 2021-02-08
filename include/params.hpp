@@ -62,9 +62,9 @@ public:
   const std::string &name() const { return name_; }
 
   void load(const nlohmann::json &j) {
-    if (j.find(name_) == j.end())
+    if (!name_.empty() && j.find(name_) == j.end())
       return;
-    const auto subj = j[name_];
+    const auto& subj = name_.empty() ? j : j[name_];
     for (const auto &member : members_)
       member.second->load(subj);
     for (const auto &member : subgroups_)
