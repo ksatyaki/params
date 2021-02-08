@@ -71,6 +71,21 @@ public:
       member.second->load(subj);
   }
 
+  void serialize(nlohmann::json &j) const { 
+    if (name_.empty()) {
+      for (const auto &member : members_)
+        member.second->serialize(j);
+      for (const auto &member : subgroups_)
+        member.second->serialize(j);
+    } else {
+      nlohmann::json& child = j[name_];
+      for (const auto &member : members_)
+        member.second->serialize(child);
+      for (const auto &member : subgroups_)
+        member.second->serialize(child);
+    }
+  }
+
   void add_subgroup(Group *group) {
     assert(group);
     subgroups_[group->name_] = group;
@@ -79,7 +94,6 @@ public:
 private:
   std::string name_;
   std::unordered_map<std::string, Group *> subgroups_;
-
   std::unordered_map<std::string, P0 *> members_;
 };
 
