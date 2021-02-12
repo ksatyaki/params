@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -45,7 +46,9 @@ struct Group {
   }
 
   friend std::ostream &operator<<(std::ostream &stream, const Group &g) {
-    stream << '<' << g.name_ << '>' << std::endl;
+    if (!g.name_.empty()) {
+      stream << '<' << g.name_ << '>' << std::endl;
+    }
     for (const auto &member : g.members_) {
       stream << '\t';
       member.second->serialize(stream);
@@ -53,17 +56,34 @@ struct Group {
     }
     for (const auto &member : g.subgroups_)
       stream << *member.second << std::endl;
-    stream << "</" << g.name_ << '>';
+    if (!g.name_.empty()) {
+      stream << "</" << g.name_ << '>';
+    }
     return stream;
   }
 
   const std::string &name() const { return name_; }
 
-  void load(const nlohmann::json &j) {
-    if (!name_.empty() && j.find(name_) == j.end()) return;
+  void load(const nlohmann::json &j, bool fail_if_not_found = false) {
+    if (!name_.empty() && j.find(name_) == j.end()) {
+      if (fail_if_not_found) {
+        throw std::runtime_error(
+            "Could not find definitions for parameter group \"" + name_ +
+            "\".");
+      }
+      return;
+    }
     const auto &subj = name_.empty() ? j : j[name_];
-    for (const auto &member : members_) member.second->load(subj);
-    for (const auto &member : subgroups_) member.second->load(subj);
+    for (const auto &member : members_) {
+      if (fail_if_not_found && j.find(member.first) == j.end()) {
+        throw std::runtime_error("Could not find setting for parameter \"" +
+                                 member.first + "\" from group \"" + name_ +
+                                 "\".");
+      }
+      member.second->load(subj);
+    }
+    for (const auto &member : subgroups_)
+      member.second->load(subj, fail_if_not_found);
   }
 
   void serialize(nlohmann::json &j) const {
