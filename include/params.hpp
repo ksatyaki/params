@@ -67,6 +67,7 @@ struct Group {
   void load(const nlohmann::json &j, bool fail_if_not_found = false) {
     if (!name_.empty() && j.find(name_) == j.end()) {
       if (fail_if_not_found) {
+        assert(false);
         throw std::runtime_error(
             "Could not find definitions for parameter group \"" + name_ +
             "\".");
@@ -75,7 +76,8 @@ struct Group {
     }
     const auto &subj = name_.empty() ? j : j[name_];
     for (const auto &member : members_) {
-      if (fail_if_not_found && j.find(member.first) == j.end()) {
+      if (fail_if_not_found && subj.find(member.first) == subj.end()) {
+        assert(false);
         throw std::runtime_error("Could not find setting for parameter \"" +
                                  member.first + "\" from group \"" + name_ +
                                  "\".");
