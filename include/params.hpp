@@ -19,7 +19,7 @@ class P0 {
     return stream << p.name_;
   }
 
-  virtual void load(const nlohmann::json &j) = 0;
+  virtual void load(const nlohmann::json &j, bool fail_if_not_found) = 0;
 
  protected:
   std::string name_{""};
@@ -51,11 +51,16 @@ struct Group {
     }
     for (const auto &member : g.members_) {
       stream << '\t';
-      member.second->serialize(stream);
+      if (member.second) {
+        // member.second->serialize(stream);
+      }
       stream << std::endl;
     }
-    for (const auto &member : g.subgroups_)
-      stream << *member.second << std::endl;
+    for (const auto &member : g.subgroups_) {
+      if (member.second) {
+        stream << *member.second << std::endl;
+      }
+    }
     if (!g.name_.empty()) {
       stream << "</" << g.name_ << '>';
     }
@@ -76,13 +81,7 @@ struct Group {
     }
     const auto &subj = name_.empty() ? j : j[name_];
     for (const auto &member : members_) {
-      if (fail_if_not_found && subj.find(member.first) == subj.end()) {
-        assert(false);
-        throw std::runtime_error("Could not find setting for parameter \"" +
-                                 member.first + "\" from group \"" + name_ +
-                                 "\".");
-      }
-      member.second->load(subj);
+      member.second->load(subj, fail_if_not_found);
     }
     for (const auto &member : subgroups_)
       member.second->load(subj, fail_if_not_found);
@@ -140,22 +139,52 @@ class Property : public P0 {
 
   friend std::ostream &operator<<(std::ostream &stream, const Property<T> &p) {
     if (p.name_.empty()) return stream << p.value_;
-    return stream << p.name_ << '=' << p.value_;
+    return stream << p.name_ << " = " << p.value_;
   }
 
   void serialize(nlohmann::json &j) const override { j[name_] = value_; }
   virtual void serialize(std::ostream &stream) const {
-    stream << name_ << '=' << value_;
+    stream << name_ << " = " << value_;
   }
 
-  void load(const nlohmann::json &j) override {
-    if (j.find(name_) == j.end()) return;
-    value_ = j[name_].get<T>();
+  void load(const nlohmann::json &j, bool fail_if_not_found) override {
+    if (j.find(name_) == j.end()) {
+      if (fail_if_not_found) {
+        if (group_ && !group_->name().empty()) {
+          throw std::runtime_error("Could not find setting for parameter \"" +
+                                   name_ + "\" from group \"" + group_->name() +
+                                   "\".");
+        } else {
+          throw std::runtime_error("Could not find setting for parameter \"" +
+                                   name_ + "\".");
+        }
+      }
+      return;
+    }
+    deserialize_(value_, j[name_], fail_if_not_found);
   }
 
  protected:
   T value_{};
   Group *group_{nullptr};
+
+  // special deserialization for properties containing a list of groups
+  template <typename GroupType>
+  static std::enable_if_t<std::is_base_of<Group, GroupType>::value>
+  deserialize_(std::vector<GroupType> &value, const nlohmann::json &j,
+               bool fail_if_not_found) {
+    value.clear();
+    for (const auto &object : j) {
+      GroupType group;
+      group.load(object, fail_if_not_found);
+      value.push_back(group);
+    }
+  }
+
+  template <typename U>
+  static void deserialize_(U &value, const nlohmann::json &j, bool) {
+    value = j.get<U>();
+  }
 };
 
 template <typename U>
