@@ -12,8 +12,8 @@ class P0 {
  public:
   inline const std::string &name() const { return name_; }
 
-  virtual void serialize(nlohmann::json &j) const { j[name_] = {}; }
-  virtual void serialize(std::ostream &stream) const { stream << name_; }
+  virtual void serialize(nlohmann::json &j) const = 0;
+  virtual void serialize(std::ostream &stream) const = 0;
 
   friend std::ostream &operator<<(std::ostream &stream, const P0 &p) {
     return stream << p.name_;
@@ -27,7 +27,6 @@ class P0 {
 };
 
 struct Group {
- public:
   Group(const std::string &name = "", Group *parent = nullptr) : name_(name) {
     if (parent != nullptr) parent->subgroups_[name] = this;
   }
@@ -83,8 +82,9 @@ struct Group {
     for (const auto &member : members_) {
       member.second->load(subj, fail_if_not_found);
     }
-    for (const auto &member : subgroups_)
+    for (const auto &member : subgroups_) {
       member.second->load(subj, fail_if_not_found);
+    }
   }
 
   void serialize(nlohmann::json &j) const {
@@ -171,12 +171,17 @@ class Property : public P0 {
   // special deserialization for properties containing a list of groups
   template <typename GroupType>
   static std::enable_if_t<std::is_base_of<Group, GroupType>::value>
-  deserialize_(std::vector<GroupType> &value, const nlohmann::json &j,
+  deserialize_(std::vector<GroupType*> &value, const nlohmann::json &j,
                bool fail_if_not_found) {
     value.clear();
     for (const auto &object : j) {
-      GroupType group;
-      group.load(object, fail_if_not_found);
+      GroupType* group = new GroupType;
+      for (const auto &member : group->members()) {
+        member.second->load(object, fail_if_not_found);
+      }
+      for (const auto &member : group->subgroups()) {
+        member.second->load(object, fail_if_not_found);
+      }
       value.push_back(group);
     }
   }
@@ -198,17 +203,36 @@ inline std::ostream &operator<<(std::ostream &stream, const std::vector<U> &p) {
 }
 
 using nlohmann::json;
+
+// special serialization for properties containing a list of groups
+template <typename GroupType>
+static inline std::enable_if_t<std::is_base_of<Group, GroupType>::value>
+to_json(json &j, const std::vector<GroupType*> &value) {
+  j = {};
+  for (const auto &group : value) {
+    json g;
+    // to_json(j, group);
+    group->serialize(g);
+    // group.serialize(g);
+    j.push_back(g);
+  }
+}
+
 template <typename T>
-void to_json(json &j, const Property<T> &p) {
+static inline void to_json(json &j, const Property<T> &p) {
   j[p.name()] = p.value();
 }
 
-inline void to_json(json &j, const Group &g) {
+template <typename GroupType>
+static inline std::enable_if_t<std::is_base_of<Group, GroupType>::value ||
+                               std::is_same<GroupType, Group>::value>
+to_json(json &j, const GroupType &g) {
   auto &j_ = j[g.name()];
-  for (const auto &subgroup : g.subgroups()) to_json(j_, *subgroup.second);
+  for (const auto &subgroup : g.subgroups()) {
+    to_json(j_, *subgroup.second);
+  }
   for (const auto &member : g.members()) {
     member.second->serialize(j_);
   }
 }
-
 }  // namespace params
