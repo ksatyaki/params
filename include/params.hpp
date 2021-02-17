@@ -143,7 +143,7 @@ class Property : public P0 {
   }
 
   void serialize(nlohmann::json &j) const override { j[name_] = value_; }
-  virtual void serialize(std::ostream &stream) const {
+  virtual void serialize(std::ostream &stream) const override {
     stream << name_ << " = " << value_;
   }
 
@@ -171,11 +171,11 @@ class Property : public P0 {
   // special deserialization for properties containing a list of groups
   template <typename GroupType>
   static std::enable_if_t<std::is_base_of<Group, GroupType>::value>
-  deserialize_(std::vector<GroupType*> &value, const nlohmann::json &j,
+  deserialize_(std::vector<GroupType *> &value, const nlohmann::json &j,
                bool fail_if_not_found) {
     value.clear();
     for (const auto &object : j) {
-      GroupType* group = new GroupType;
+      GroupType *group = new GroupType;
       for (const auto &member : group->members()) {
         member.second->load(object, fail_if_not_found);
       }
@@ -207,7 +207,7 @@ using nlohmann::json;
 // special serialization for properties containing a list of groups
 template <typename GroupType>
 static inline std::enable_if_t<std::is_base_of<Group, GroupType>::value>
-to_json(json &j, const std::vector<GroupType*> &value) {
+to_json(json &j, const std::vector<GroupType *> &value) {
   j = {};
   for (const auto &group : value) {
     json g;
