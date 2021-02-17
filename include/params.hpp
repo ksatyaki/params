@@ -51,7 +51,7 @@ struct Group {
     for (const auto &member : g.members_) {
       stream << '\t';
       if (member.second) {
-        // member.second->serialize(stream);
+        member.second->serialize(stream);
       }
       stream << std::endl;
     }
