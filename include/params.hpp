@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <variant>
 
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 
 namespace params {
 class P0 {
